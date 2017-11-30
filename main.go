@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -14,7 +15,19 @@ import (
 )
 
 func main() {
-	config := &types.Configuration{}
+	hostName, err := os.Hostname()
+	if err != nil {
+		fmt.Println("Unable to automatically set instanceid to hostname")
+	}
+	config := &types.Configuration{
+		Debug:                 false,
+		PollIntervalSec:       120,
+		InstanceID:            hostName,
+		SimulatedBackendPort:  40001,
+		TraefikHealthEndpoint: "http://localhost:8080/health",
+		WatchdogFabricURI:     "fabric:/TraefikType/Watchdog",
+		WatchdogTraefikURL:    "http://localhost:80/TraefikType/Watchdog",
+	}
 
 	rootCmd := &flaeg.Command{
 		Name:                  "start",
@@ -22,6 +35,11 @@ func main() {
 		Config:                config,
 		DefaultPointersConfig: config,
 		Run: func() error {
+			if config.AppInsightsKey == "" {
+				panic("Application insights key is required use '--appinsightskey=key' use '-h' to see help")
+			}
+
+			fmt.Printf("Running watchdog with config :\n %+v\n", prettyPrintStruct(config))
 			startWatchdog(*config)
 			return nil
 		},
@@ -36,6 +54,11 @@ func main() {
 	}
 }
 
+func prettyPrintStruct(item interface{}) string {
+	b, _ := json.MarshalIndent(item, "", " ")
+	return string(b)
+}
+
 func startWatchdog(config types.Configuration) {
 	healthChan := make(chan types.StatsEvent)
 
@@ -45,7 +68,10 @@ func startWatchdog(config types.Configuration) {
 	for {
 		event := <-healthChan
 		publishToAppInsights(event, config)
-		fmt.Println(event.IsSuccess)
+		if config.Debug {
+
+		}
+		fmt.Println(prettyPrintStruct(event))
 	}
 }
 

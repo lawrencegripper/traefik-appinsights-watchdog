@@ -21,6 +21,7 @@ func StartCheck(config types.Configuration, healthChannel chan<- types.StatsEven
 
 func getStatsEvent(endpoint string) types.StatsEvent {
 	event := types.StatsEvent{
+		Source:     "HealthCheck",
 		SourceTime: time.Now(),
 		Data:       make(map[string]interface{}),
 		IsSuccess:  false,

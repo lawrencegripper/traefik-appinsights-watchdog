@@ -27,8 +27,6 @@ func StartCheck(config types.Configuration, healthChannel chan<- types.StatsEven
 		context.StartTime = time.Now()
 		nonceUUID, _ := uuid.NewUUID()
 		context.Nonce = nonceUUID.String()
-		fmt.Println("Creating server")
-		fmt.Println("Starting check")
 		healthChannel <- context.makeRequest()
 		time.Sleep(3 * time.Second)
 	}
@@ -50,6 +48,7 @@ func (context *RequestContext) runServer() {
 
 func (context *RequestContext) makeRequest() types.StatsEvent {
 	event := types.StatsEvent{
+		Source:          "RoutingCheck",
 		SourceTime:      time.Now(),
 		Data:            make(map[string]interface{}),
 		IsSuccess:       false,
