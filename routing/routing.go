@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"time"
 
@@ -14,7 +15,13 @@ import (
 
 // StartCheck begins checking that traefik is routing information successfully by settings up a
 // dummy server and pushing requests through traefik back to itself.
-func StartCheck(context RequestContext, healthChannel chan<- types.StatsEvent) {
+func StartCheck(config types.Configuration, healthChannel chan<- types.StatsEvent) {
+	context := RequestContext{
+		Port:              config.SimulatedBackendPort,
+		FabricURI:         config.WatchdogFabricURI,
+		TraefikServiceURL: config.WatchdogTraefikURL,
+		StartTime:         time.Now(),
+	}
 	go context.runServer()
 	for {
 		context.StartTime = time.Now()
@@ -64,7 +71,7 @@ func (context *RequestContext) makeRequest() types.StatsEvent {
 		Expires: time.Now().Add(time.Hour),
 		Domain:  "localhost",
 		Name:    generateCookieName(context.FabricURI),
-		Value:   context.BackendURL,
+		Value:   fmt.Sprintf("http://%v:%v", getOutboundIP(), context.Port),
 	})
 
 	result, err := client.Do(req)
@@ -109,4 +116,17 @@ func generateCookieName(backendName string) string {
 	}
 
 	return fmt.Sprintf("_%x", hash.Sum(nil))[:cookieNameLength]
+}
+
+// Get preferred outbound ip of this machine
+func getOutboundIP() net.IP {
+	conn, err := net.Dial("udp", "127.0.0.1:80")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+
+	return localAddr.IP
 }
