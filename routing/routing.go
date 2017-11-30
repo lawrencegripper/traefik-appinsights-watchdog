@@ -10,25 +10,26 @@ import (
 
 	"github.com/cloudflare/cfssl/log"
 	"github.com/google/uuid"
-	"github.com/lawrencegripper/sfTraefikWatchdog/types"
+	"github.com/lawrencegripper/traefik-appinsights-watchdog/types"
 )
 
 // StartCheck begins checking that traefik is routing information successfully by settings up a
 // dummy server and pushing requests through traefik back to itself.
 func StartCheck(config types.Configuration, healthChannel chan<- types.StatsEvent) {
 	context := RequestContext{
-		Port:              config.SimulatedBackendPort,
-		FabricURI:         config.WatchdogFabricURI,
+		Port:              config.WatchdogTestServerPort,
+		FabricURI:         config.TraefikBackendName,
 		TraefikServiceURL: config.WatchdogTraefikURL,
 		StartTime:         time.Now(),
 	}
+	intervalDuration := time.Second * time.Duration(config.PollIntervalSec)
 	go context.runServer()
 	for {
 		context.StartTime = time.Now()
 		nonceUUID, _ := uuid.NewUUID()
 		context.Nonce = nonceUUID.String()
 		healthChannel <- context.makeRequest()
-		time.Sleep(3 * time.Second)
+		time.Sleep(intervalDuration)
 	}
 }
 

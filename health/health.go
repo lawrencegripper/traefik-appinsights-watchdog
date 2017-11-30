@@ -2,11 +2,12 @@ package health
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
 
-	"github.com/lawrencegripper/sfTraefikWatchdog/types"
+	"github.com/lawrencegripper/traefik-appinsights-watchdog/types"
 )
 
 // StartCheck poll health endpoint
@@ -30,9 +31,14 @@ func getStatsEvent(endpoint string) types.StatsEvent {
 	resp, err := http.Get(endpoint)
 	elapsed := time.Since(start)
 	event.RequestDuration = elapsed
-	if err != nil || resp.StatusCode != http.StatusOK {
+	if err != nil {
 		event.IsSuccess = false
 		event.ErrorDetails = err.Error()
+		return event
+	}
+	if resp.StatusCode != http.StatusOK {
+		event.IsSuccess = false
+		event.ErrorDetails = fmt.Sprintf("Health endpoint returned error code: %v", http.StatusOK)
 		return event
 	}
 	body, readErr := ioutil.ReadAll(resp.Body)

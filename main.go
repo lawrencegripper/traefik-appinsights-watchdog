@@ -9,9 +9,9 @@ import (
 
 	"github.com/Microsoft/ApplicationInsights-Go/appinsights"
 	"github.com/containous/flaeg"
-	"github.com/lawrencegripper/sfTraefikWatchdog/health"
-	"github.com/lawrencegripper/sfTraefikWatchdog/routing"
-	"github.com/lawrencegripper/sfTraefikWatchdog/types"
+	"github.com/lawrencegripper/traefik-appinsights-watchdog/health"
+	"github.com/lawrencegripper/traefik-appinsights-watchdog/routing"
+	"github.com/lawrencegripper/traefik-appinsights-watchdog/types"
 )
 
 func main() {
@@ -20,13 +20,13 @@ func main() {
 		fmt.Println("Unable to automatically set instanceid to hostname")
 	}
 	config := &types.Configuration{
-		Debug:                 false,
-		PollIntervalSec:       120,
-		InstanceID:            hostName,
-		SimulatedBackendPort:  40001,
-		TraefikHealthEndpoint: "http://localhost:8080/health",
-		WatchdogFabricURI:     "fabric:/TraefikType/Watchdog",
-		WatchdogTraefikURL:    "http://localhost:80/TraefikType/Watchdog",
+		Debug:                  false,
+		PollIntervalSec:        120,
+		InstanceID:             hostName,
+		WatchdogTestServerPort: 40001,
+		TraefikHealthEndpoint:  "http://localhost:8080/health",
+		TraefikBackendName:     "fabric:/TraefikType/Watchdog",
+		WatchdogTraefikURL:     "http://localhost:80/TraefikType/Watchdog",
 	}
 
 	rootCmd := &flaeg.Command{
@@ -93,9 +93,6 @@ func publishToAppInsights(event types.StatsEvent, config types.Configuration) {
 		}
 		if subMap == nil {
 			continue
-		}
-		if len(subMap) == 0 {
-			fmt.Printf("Sub map %v+ is empty\n", k)
 		}
 		for subk, subv := range subMap {
 			subs := fmt.Sprint(subv)
