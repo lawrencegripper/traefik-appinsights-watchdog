@@ -101,8 +101,6 @@ func publishToAppInsights(event types.StatsEvent, config types.Configuration) {
 			buffer.WriteString(".")
 			buffer.WriteString(subk)
 			compk := buffer.String()
-			fmt.Println("ss: " + subs)
-			fmt.Println("ck: " + compk)
 			telemetry.SetProperty(compk, subs)
 		}
 	}
