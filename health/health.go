@@ -38,7 +38,7 @@ func getStatsEvent(endpoint string) types.StatsEvent {
 	}
 	if resp.StatusCode != http.StatusOK {
 		event.IsSuccess = false
-		event.ErrorDetails = fmt.Sprintf("Health endpoint returned error code: %v", http.StatusOK)
+		event.ErrorDetails = fmt.Sprintf("Health endpoint returned error code: %v", resp.StatusCode)
 		return event
 	}
 	body, readErr := ioutil.ReadAll(resp.Body)
