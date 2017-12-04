@@ -37,7 +37,24 @@ Flags:
 
 Events will then be added to your Application Insights instance as `CustomEvents`. You can query these using the [Analytics portal](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-analytics). Metrics from traefik will appear under `customdimensions` on the events. 
 
-To see what will be logged set `--debug=true` and the watchdog will output the events as `json` into the console. For example you would see:
+Here is an example query to graph `failures` vs `success` over the last `30mins` in the Anaytics portal 
+
+```
+    customEvents 
+    | where timestamp > ago(30m)  
+    | summarize count() by tostring(customDimensions.isSuccess), bin(timestamp, 10s)
+    | render timechart 
+```
+
+Here is a query to show full tabular data for the last `30mins`. 
+
+```
+    customEvents 
+    | where timestamp > ago(30m) 
+    | order by timestamp desc 
+```
+
+To see what will be logged and for debugging output set `--debug=true` and the watchdog will output the events as `json` into the console. For example you would see:
 
 Run command: `./traefik-appinsights-watchdog --appinsightskey=YourKeyHere`
 
