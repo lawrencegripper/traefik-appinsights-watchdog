@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cloudflare/cfssl/log"
 	"github.com/google/uuid"
 	"github.com/lawrencegripper/traefik-appinsights-watchdog/types"
 )
@@ -21,13 +20,14 @@ func StartCheck(config types.Configuration, healthChannel chan<- types.StatsEven
 		FabricURI:         config.TraefikBackendName,
 		TraefikServiceURL: config.WatchdogTraefikURL,
 		StartTime:         time.Now(),
+		InstanceID:        config.InstanceID,
+		Nonce:             uuid.New().String(),
 	}
 	intervalDuration := time.Second * time.Duration(config.PollIntervalSec)
 	go context.runServer()
 	for {
 		context.StartTime = time.Now()
-		nonceUUID, _ := uuid.NewUUID()
-		context.Nonce = nonceUUID.String()
+		context.Nonce = uuid.New().String()
 		healthChannel <- context.makeRequest()
 		time.Sleep(intervalDuration)
 	}
@@ -35,13 +35,14 @@ func StartCheck(config types.Configuration, healthChannel chan<- types.StatsEven
 
 func (context *RequestContext) receiveHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(r.Cookie(generateCookieName(context.FabricURI)))
+	w.Header().Set("x-response-from", context.InstanceID)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(context.Nonce))
 }
 
 func (context *RequestContext) runServer() {
 	http.HandleFunc("/", context.receiveHandler)
-	err := http.ListenAndServe(fmt.Sprintf("localhost:%v", context.Port), nil)
+	err := http.ListenAndServe(fmt.Sprintf(":%v", context.Port), nil)
 	if err != nil {
 		panic(err)
 	}
@@ -71,7 +72,8 @@ func (context *RequestContext) makeRequest() types.StatsEvent {
 		Expires: time.Now().Add(time.Hour),
 		Domain:  "localhost",
 		Name:    generateCookieName(context.FabricURI),
-		Value:   fmt.Sprintf("http://%v:%v", getOutboundIP(), context.Port),
+		Value:   fmt.Sprintf("http://%v:%v/", getOutboundIP(), context.Port),
+		Path:    "/",
 	})
 
 	result, err := client.Do(req)
@@ -87,6 +89,12 @@ func (context *RequestContext) makeRequest() types.StatsEvent {
 		return event
 	}
 
+	responseFrom := result.Header.Get("x-response-from")
+	if responseFrom != context.InstanceID {
+		event.ErrorDetails = fmt.Sprintf("Response from wrong instance expected: %s got response from: %s", context.InstanceID, responseFrom)
+		return event
+	}
+
 	body, err := ioutil.ReadAll(result.Body)
 	if err != nil {
 		event.ErrorDetails = "Unable to read request body"
@@ -94,7 +102,7 @@ func (context *RequestContext) makeRequest() types.StatsEvent {
 	}
 
 	if string(body) != context.Nonce {
-		event.ErrorDetails = fmt.Sprintf("Returned value doesn't match expected %s", string(body))
+		event.ErrorDetails = fmt.Sprintf("Returned value doesn't match got: %s expected: %s response was from: %s", string(body), context.Nonce, responseFrom)
 		return event
 	}
 
@@ -112,17 +120,19 @@ func generateCookieName(backendName string) string {
 	_, err := hash.Write(data)
 	if err != nil {
 		// Impossible case
-		log.Errorf("Fail to create cookie name: %v", err)
+		panic(err)
 	}
 
 	return fmt.Sprintf("_%x", hash.Sum(nil))[:cookieNameLength]
 }
 
 // Get preferred outbound ip of this machine
+// no connection is made so no traffic leaves the box.
+// conn object only used to find ip
 func getOutboundIP() net.IP {
-	conn, err := net.Dial("udp", "127.0.0.1:80")
+	conn, err := net.Dial("udp", "8.8.8.8:80")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	defer conn.Close()
 

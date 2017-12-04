@@ -79,6 +79,8 @@ func publishToAppInsights(event types.StatsEvent, config types.Configuration) {
 	client := appinsights.NewTelemetryClient(config.AppInsightsKey)
 	telemetry := appinsights.NewEventTelemetry(config.InstanceID)
 	telemetry.SetProperty("sourceTime", event.SourceTime.String())
+	telemetry.SetProperty("source", event.Source)
+	telemetry.SetProperty("instanceID", config.InstanceID) //Duplicated for discoverability
 	telemetry.SetProperty("isSuccess", strconv.FormatBool(event.IsSuccess))
 	telemetry.SetProperty("requestDuration", event.RequestDuration.String())
 	if !event.IsSuccess {
