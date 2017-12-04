@@ -5,19 +5,13 @@
   branch = "master"
   name = "code.cloudfoundry.org/clock"
   packages = ["."]
-  revision = "1fea04828a6fb034280dcb5d07f39f5b7f5739e9"
+  revision = "e9dc86bbf0e5bbe6bf7ff5a6f71e048959b61f71"
 
 [[projects]]
   name = "github.com/Microsoft/ApplicationInsights-Go"
   packages = ["appinsights"]
   revision = "bac23a8f32e504d72bf361d9beef05b59fc478aa"
   version = "v0.3.0"
-
-[[projects]]
-  name = "github.com/cloudflare/cfssl"
-  packages = ["log"]
-  revision = "db0d0650b6496bfe8061ec56a92edd32d8e75c30"
-  version = "1.2.0"
 
 [[projects]]
   name = "github.com/containous/flaeg"
@@ -40,6 +34,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "48f9ed5c282ef5d362ad7a1ddaade4c0b989b4397c179ef934d2db602a5c55e0"
+  inputs-digest = "3b1a6c1c22b75415bbfdfb4c07e18a2b9cdadb1c27ac606fd5d48b17fcfeefd7"
   solver-name = "gps-cdcl"
   solver-version = 1
