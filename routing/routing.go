@@ -54,7 +54,7 @@ func (context *RequestContext) makeRequest() types.StatsEvent {
 		SourceTime:      time.Now(),
 		Data:            make(map[string]interface{}),
 		IsSuccess:       false,
-		RequestDuration: time.Now().Sub(context.StartTime),
+		RequestDuration: time.Since(context.StartTime),
 	}
 
 	client := &http.Client{

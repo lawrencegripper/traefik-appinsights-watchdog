@@ -1,6 +1,8 @@
 Traefik Application Insights Watchdog
 =============
 
+[![Build Status](https://travis-ci.org/lawrencegripper/traefik-appinsights-watchdog.svg?branch=master)](https://travis-ci.org/lawrencegripper/traefik-appinsights-watchdog)
+
 > *Please note*: This project is in development. The current readme is a draft. 
 
 ## What is it?
@@ -115,3 +117,9 @@ However, it can be run independently inside other orchestrator's such a Kubernet
 This project is a simple watchdog service provided 'as is' and we currently have no plans to expands it's feature set.
 
 We would welcome contributions. If you identify issues please log them and, if possible, develop a fix in as a PR.
+
+## Building
+
+Run `build.sh` this has a dependency on docker.
+
+The build with run a set of checks, execute tests and then output. Once completed you can use `docker run --rm traefik-appinsights-watchdog:latest --appinsightskey=XXXXXXXXX --debug` to test your build.
