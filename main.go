@@ -69,9 +69,8 @@ func startWatchdog(config types.Configuration) {
 		event := <-healthChan
 		publishToAppInsights(event, config)
 		if config.Debug {
-
+			fmt.Println(prettyPrintStruct(event))
 		}
-		fmt.Println(prettyPrintStruct(event))
 	}
 }
 

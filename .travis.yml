@@ -1,0 +1,9 @@
+sudo: required
+
+language: go
+
+services:
+  - docker
+
+before_install:
+  - docker build -t lawrencegripper/traefik-appinsights-watchdog .
