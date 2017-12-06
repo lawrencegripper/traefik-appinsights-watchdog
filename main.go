@@ -69,9 +69,8 @@ func startWatchdog(config types.Configuration) {
 		event := <-healthChan
 		publishToAppInsights(event, config)
 		if config.Debug {
-
+			fmt.Println(prettyPrintStruct(event))
 		}
-		fmt.Println(prettyPrintStruct(event))
 	}
 }
 
@@ -82,7 +81,7 @@ func publishToAppInsights(event types.StatsEvent, config types.Configuration) {
 	telemetry.SetProperty("source", event.Source)
 	telemetry.SetProperty("instanceID", config.InstanceID) //Duplicated for discoverability
 	telemetry.SetProperty("isSuccess", strconv.FormatBool(event.IsSuccess))
-	telemetry.SetProperty("requestDuration", event.RequestDuration.String())
+	telemetry.SetProperty("requestDurationInNs", strconv.FormatInt(event.RequestDuration.Nanoseconds(), 10))
 	if !event.IsSuccess {
 		telemetry.SetProperty("errorDetails", event.ErrorDetails)
 	}
