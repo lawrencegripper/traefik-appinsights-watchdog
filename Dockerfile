@@ -15,7 +15,7 @@ RUN dep ensure --vendor-only -v
 
 COPY . /go/src/github.com/lawrencegripper/traefik-appinsights-watchdog/
 
-RUN chmod +x codechecks.sh && ./codechecks.sh
+RUN chmod +x codechecks.sh; sync; ./codechecks.sh
 
 RUN go build -o traefik-appinsights-watchdog -v
 

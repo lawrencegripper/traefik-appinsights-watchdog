@@ -1,6 +1,8 @@
 Traefik Application Insights Watchdog
 =============
 
+[![Build Status](https://travis-ci.org/lawrencegripper/traefik-appinsights-watchdog.svg?branch=master)](https://travis-ci.org/lawrencegripper/traefik-appinsights-watchdog)
+
 > *Please note*: This project is in development. The current readme is a draft. 
 
 ## What is it?
