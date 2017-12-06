@@ -7,11 +7,11 @@ Traefik Application Insights Watchdog
 
 ## What is it?
 
-[Application Insights](https://azure.microsoft.com/en-us/services/application-insights/) is a managed logging solution in Azure. This watchdog service polls an instance of [Traefik](https://docs.traefik.io/) - reporting it's health metrics and checking it's routing.
+[Application Insights](https://azure.microsoft.com/en-us/services/application-insights/) is a managed logging solution in Azure. This watchdog service polls an instance of [Traefik](https://docs.traefik.io/) - reporting its health metrics and checking it's routing correctly.
 
 ## How do I use it?
 
-The simplest way to use it is to deploy Traefik on Service Fabric, using the [deployment guide here](https://aka.ms/traefikonsf).
+The simplest way to use it is to deploy it along side Traefik on Service Fabric, using the [deployment guide here](https://aka.ms/traefikonsf).
 
 If you would like to test or deploy separately here is a guide to launching the watchdog.
 
@@ -104,9 +104,11 @@ Run command: `./traefik-appinsights-watchdog --appinsightskey=YourKeyHere`
 }
 ```
 
+**Note:** The events logged to stdout may differ to the actual events you see in Application Insights due to some post processing.
+
 ## Why was it built?
 
-It was primarily designed to run inside Service Fabric to support the use of Traefik on Service Fabric. Having the watchdog reporting stats from an independent service allows it to log when Traefik is not responding or has crashed. This is preferable to a gap in reporting, which would signal a failure if the stats where reported by the Traefik service in process.
+It was primarily designed to run inside Service Fabric to support the use of Traefik on Service Fabric. Having the watchdog reporting stats from an independent service allows it to log when Traefik is not responding or has crashed. This is preferable to a gap in reporting, which would signal a failure if the stats were reported by the Traefik service in process.
 
 However, it can be run independently inside other orchestrator's such a Kubernetes. *Please Note* Use outside of Service Fabric will require some additional testing and adjustment of the default values to ensure expected behavior.
 
