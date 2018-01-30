@@ -61,8 +61,8 @@ func prettyPrintStruct(item interface{}) string {
 
 func startWatchdog(config types.Configuration) {
 	healthChan := make(chan types.StatsEvent)
-	client := getTelemetryClient(config)
-	
+	client := newTelemetryClient(config)
+
 	go routing.StartCheck(config, healthChan)
 	go health.StartCheck(config, healthChan)
 
