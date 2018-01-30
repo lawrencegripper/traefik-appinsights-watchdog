@@ -61,21 +61,28 @@ func prettyPrintStruct(item interface{}) string {
 
 func startWatchdog(config types.Configuration) {
 	healthChan := make(chan types.StatsEvent)
+	client := newTelemetryClient(config)
 
 	go routing.StartCheck(config, healthChan)
 	go health.StartCheck(config, healthChan)
 
 	for {
 		event := <-healthChan
-		publishToAppInsights(event, config)
+		publishToAppInsights(client, event, config)
 		if config.Debug {
 			fmt.Println(prettyPrintStruct(event))
 		}
 	}
 }
 
-func publishToAppInsights(event types.StatsEvent, config types.Configuration) {
-	client := appinsights.NewTelemetryClient(config.AppInsightsKey)
+func newTelemetryClient(config types.Configuration) appinsights.TelemetryClient {
+	telemetryClient := appinsights.NewTelemetryClient(config.AppInsightsKey)
+	telemetryClient.Context().Cloud().SetRoleName("traefik-appinsights-watchdog")
+	telemetryClient.Context().Cloud().SetRoleInstance(config.InstanceID)
+	return telemetryClient
+}
+
+func publishToAppInsights(client appinsights.TelemetryClient, event types.StatsEvent, config types.Configuration) {
 	telemetry := appinsights.NewEventTelemetry(config.InstanceID)
 	telemetry.SetProperty("sourceTime", event.SourceTime.String())
 	telemetry.SetProperty("source", event.Source)
