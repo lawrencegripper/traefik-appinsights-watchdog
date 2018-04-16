@@ -10,4 +10,5 @@ type Configuration struct {
 	WatchdogTraefikURL     string `description:"The url traefik will use to route requests to the watchdog"`
 	TraefikHealthEndpoint  string `description:"The traeifk health endpoint http://localhost:port/health"`
 	PollIntervalSec        int    `description:"The time waited between requests to the health endpoint"`
+	AllowInvalidCert       bool   `description:"Allow invalid certificates when performing routing checks on localhost"`
 }

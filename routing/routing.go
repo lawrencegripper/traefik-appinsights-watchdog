@@ -2,6 +2,7 @@ package routing
 
 import (
 	"crypto/sha1"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -23,12 +24,18 @@ func StartCheck(config types.Configuration, healthChannel chan<- types.StatsEven
 		InstanceID:        config.InstanceID,
 		Nonce:             uuid.New().String(),
 	}
+
+	tlsConfig := &tls.Config{}
+	if config.AllowInvalidCert {
+		tlsConfig.InsecureSkipVerify = true
+	}
+
 	intervalDuration := time.Second * time.Duration(config.PollIntervalSec)
 	go context.runServer()
 	for {
 		context.StartTime = time.Now()
 		context.Nonce = uuid.New().String()
-		healthChannel <- context.makeRequest()
+		healthChannel <- context.makeRequest(tlsConfig)
 		time.Sleep(intervalDuration)
 	}
 }
@@ -48,7 +55,7 @@ func (context *RequestContext) runServer() {
 	}
 }
 
-func (context *RequestContext) makeRequest() types.StatsEvent {
+func (context *RequestContext) makeRequest(tlsConfig *tls.Config) types.StatsEvent {
 	event := types.StatsEvent{
 		Source:          "RoutingCheck",
 		SourceTime:      time.Now(),
@@ -59,6 +66,9 @@ func (context *RequestContext) makeRequest() types.StatsEvent {
 
 	client := &http.Client{
 		Timeout: time.Second * 3,
+		Transport: &http.Transport{
+			TLSClientConfig: tlsConfig,
+		},
 	}
 
 	req, err := http.NewRequest("GET", context.TraefikServiceURL, nil)
