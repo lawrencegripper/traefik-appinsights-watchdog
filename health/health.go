@@ -1,26 +1,30 @@
 package health
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/lawrencegripper/traefik-appinsights-watchdog/types"
 	"io/ioutil"
 	"net/http"
 	"time"
-
-	"github.com/lawrencegripper/traefik-appinsights-watchdog/types"
 )
 
 // StartCheck poll health endpoint
 func StartCheck(config types.Configuration, healthChannel chan<- types.StatsEvent) {
 	intervalDuration := time.Second * time.Duration(config.PollIntervalSec)
+	tlsConfig := &tls.Config{}
+	if config.AllowInvalidCert {
+		tlsConfig.InsecureSkipVerify = true
+	}
 	for {
-		ev := getStatsEvent(config.TraefikHealthEndpoint)
+		ev := getStatsEvent(config.TraefikHealthEndpoint, tlsConfig)
 		healthChannel <- ev
 		time.Sleep(intervalDuration)
 	}
 }
 
-func getStatsEvent(endpoint string) types.StatsEvent {
+func getStatsEvent(endpoint string, tlsConfig *tls.Config) types.StatsEvent {
 	event := types.StatsEvent{
 		Source:     "HealthCheck",
 		SourceTime: time.Now(),
@@ -28,7 +32,14 @@ func getStatsEvent(endpoint string) types.StatsEvent {
 		IsSuccess:  false,
 	}
 	start := time.Now()
-	resp, err := http.Get(endpoint)
+	client := &http.Client{
+		Timeout: time.Second * 3,
+		Transport: &http.Transport{
+			TLSClientConfig: tlsConfig,
+		},
+	}
+
+	resp, err := client.Get(endpoint)
 	elapsed := time.Since(start)
 	event.RequestDuration = elapsed
 	if err != nil {
