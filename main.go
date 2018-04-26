@@ -36,7 +36,8 @@ func main() {
 		DefaultPointersConfig: config,
 		Run: func() error {
 			if config.AppInsightsKey == "" {
-				panic("Application insights key is required use '--appinsightskey=key' use '-h' to see help")
+				fmt.Println("Application insights key is required use '--appinsightskey=key' use '-h' to see help")
+				os.Exit(1)
 			}
 
 			fmt.Printf("Running watchdog with config :\n %+v\n", prettyPrintStruct(config))
