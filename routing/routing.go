@@ -21,7 +21,6 @@ func StartCheck(config types.Configuration, healthChannel chan<- types.StatsEven
 		TraefikServiceURL: config.WatchdogTraefikURL,
 		StartTime:         time.Now(),
 		InstanceID:        config.InstanceID,
-		Nonce:             uuid.New().String(),
 	}
 	intervalDuration := time.Second * time.Duration(config.PollIntervalSec)
 	go context.runServer()

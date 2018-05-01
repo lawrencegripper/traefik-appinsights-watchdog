@@ -1,13 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
-	"strconv"
 
-	"github.com/Microsoft/ApplicationInsights-Go/appinsights"
 	"github.com/containous/flaeg"
 	"github.com/lawrencegripper/traefik-appinsights-watchdog/health"
 	"github.com/lawrencegripper/traefik-appinsights-watchdog/routing"
@@ -62,56 +59,16 @@ func prettyPrintStruct(item interface{}) string {
 
 func startWatchdog(config types.Configuration) {
 	healthChan := make(chan types.StatsEvent)
-	client := newTelemetryClient(config)
+	client := NewTelemetryClient(config)
 
 	go routing.StartCheck(config, healthChan)
 	go health.StartCheck(config, healthChan)
 
 	for {
 		event := <-healthChan
-		publishToAppInsights(client, event, config)
+		PublishToAppInsights(client, event, config)
 		if config.Debug {
 			fmt.Println(prettyPrintStruct(event))
 		}
 	}
-}
-
-func newTelemetryClient(config types.Configuration) appinsights.TelemetryClient {
-	telemetryClient := appinsights.NewTelemetryClient(config.AppInsightsKey)
-	telemetryClient.Context().Cloud().SetRoleName("traefik-appinsights-watchdog")
-	telemetryClient.Context().Cloud().SetRoleInstance(config.InstanceID)
-	return telemetryClient
-}
-
-func publishToAppInsights(client appinsights.TelemetryClient, event types.StatsEvent, config types.Configuration) {
-	telemetry := appinsights.NewEventTelemetry(config.InstanceID)
-	telemetry.SetProperty("sourceTime", event.SourceTime.String())
-	telemetry.SetProperty("source", event.Source)
-	telemetry.SetProperty("instanceID", config.InstanceID) //Duplicated for discoverability
-	telemetry.SetProperty("isSuccess", strconv.FormatBool(event.IsSuccess))
-	telemetry.SetProperty("requestDurationInNs", strconv.FormatInt(event.RequestDuration.Nanoseconds(), 10))
-	if !event.IsSuccess {
-		telemetry.SetProperty("errorDetails", event.ErrorDetails)
-	}
-	for k, v := range event.Data {
-		subMap, ok := v.(map[string]interface{})
-		if !ok {
-			s := fmt.Sprint(v)
-			telemetry.SetProperty(k, s)
-			continue
-		}
-		if subMap == nil {
-			continue
-		}
-		for subk, subv := range subMap {
-			subs := fmt.Sprint(subv)
-			var buffer bytes.Buffer
-			buffer.WriteString(k)
-			buffer.WriteString(".")
-			buffer.WriteString(subk)
-			compk := buffer.String()
-			telemetry.SetProperty(compk, subs)
-		}
-	}
-	client.TrackEventTelemetry(telemetry)
 }
