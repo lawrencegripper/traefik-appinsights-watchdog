@@ -1,6 +1,7 @@
 package routing
 
 import (
+	"context"
 	"crypto/sha1"
 	"crypto/tls"
 	"fmt"
@@ -15,7 +16,7 @@ import (
 
 // StartCheck begins checking that traefik is routing information successfully by settings up a
 // dummy server and pushing requests through traefik back to itself.
-func StartCheck(config types.Configuration, healthChannel chan<- types.StatsEvent) {
+func StartCheck(ctx context.Context, config types.Configuration, healthChannel chan<- types.StatsEvent) {
 	context := RequestContext{
 		Port:              config.WatchdogTestServerPort,
 		FabricURI:         config.TraefikBackendName,
@@ -32,10 +33,15 @@ func StartCheck(config types.Configuration, healthChannel chan<- types.StatsEven
 	intervalDuration := time.Second * time.Duration(config.PollIntervalSec)
 	go context.runServer()
 	for {
-		context.StartTime = time.Now()
-		context.Nonce = uuid.New().String()
-		healthChannel <- context.makeRequest(tlsConfig)
-		time.Sleep(intervalDuration)
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			context.StartTime = time.Now()
+			context.Nonce = uuid.New().String()
+			healthChannel <- context.makeRequest(tlsConfig)
+			time.Sleep(intervalDuration)
+		}
 	}
 }
 

@@ -3,6 +3,8 @@
 set -e
 set -o pipefail
 
+go test -v ./...
+
 PKGS=$(go list ./... | grep -v '/vendor/') 
 GOFILES=$(go list -f '{{range $index, $element := .GoFiles}}{{$.Dir}}/{{$element}}{{"\n"}}{{end}}' ./... | grep -v '/vendor/') 
 echo "----------> Running gofmt"
@@ -17,5 +19,3 @@ echo "----------> Running simple"
 gosimple $PKGS 
 echo "----------> Running staticcheck" 
 staticcheck $PKGS 
-echo "----------> Running go test"
-go test -v -cover $PKGS 
