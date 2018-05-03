@@ -7,7 +7,7 @@ addons:
 services:
 - docker
 script:
-- bash ./build.sh
+- bash ./ci.sh
 
 before_deploy:
       - git tag "$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)"
