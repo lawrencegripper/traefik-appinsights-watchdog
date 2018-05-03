@@ -1,0 +1,31 @@
+{
+  "pid": 2458,
+  "uptime": "39m6.885931127s",
+  "uptime_sec": 2346.885931127,
+  "time": "2015-10-07 18:32:24.362238909 +0200 CEST",
+  "unixtime": 1444235544,
+  "status_code_count": {
+    "502": 1
+  },
+  "total_status_code_count": {
+    "200": 7,
+    "404": 21,
+    "502": 13
+  },
+  "count": 1,
+  "total_count": 41,
+  "total_response_time": "35.456865605s",
+  "total_response_time_sec": 35.456865605,
+  "average_response_time": "864.8016ms",
+  "average_response_time_sec": 0.8648016000000001,
+  "recent_errors": [
+    {
+      "status_code": 500,
+      "status": "Internal Server Error",
+      "method": "GET",
+      "host": "localhost",
+      "path": "/path",
+      "time": "2016-10-21T16:59:15.418495872-07:00"
+    }
+  ]
+}

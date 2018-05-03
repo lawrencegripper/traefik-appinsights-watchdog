@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -60,9 +61,10 @@ func prettyPrintStruct(item interface{}) string {
 func startWatchdog(config types.Configuration) {
 	healthChan := make(chan types.StatsEvent)
 	client := NewTelemetryClient(config)
+	ctx := context.Background()
 
-	go routing.StartCheck(config, healthChan)
-	go health.StartCheck(config, healthChan)
+	go routing.StartCheck(ctx, config, healthChan)
+	go health.StartCheck(ctx, config, healthChan)
 
 	for {
 		event := <-healthChan

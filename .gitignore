@@ -1,3 +1,5 @@
 sfTraefikWatchdog
 traefik-appinsights-watchdog
 debug
+bin
+**/debug.test
