@@ -1,14 +1,26 @@
 sudo: required
-
 language: go
-
 addons:
   apt:
     packages:
-      - docker-ce
-
+    - docker-ce
 services:
-  - docker
-
+- docker
 script:
-  - bash ./build.sh
+- bash ./build.sh
+
+before_deploy:
+      - git tag "$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)"
+
+deploy:
+  provider: releases
+  api_key:
+    secure: f7nGLq2icko7ntamM6hkpCCmT/Vtd6mbrIsEk4tGZGYaQ6oDpjmfgurIxP9b74/bBf7m0JbOXydfY6FDQWo02rkNZHobcvgbbVmvJFAAoidJRcHYjTcFYzgt0yB5aCtSOpEpvW7S1SGvfKXfPRV1Dq5FCtMAWhPD+mVs0VxXMiBOQHjcufoE/Jz+JwfxCeSiI2BlBSxxWMSQ65R8meDtKm0XaNrELmnYmozTreyt6PANYGwxIWMaNtRovGNJUHIkOO8ToFCrAQ3eqgpAfDs9cmmZHP9zLJHqi3nw2Suvlr0vENYS1/lvl1GHxNJHn77vUDTNSdumeWu99jDZW5Snx55YBy+su+BO7sqyoHdcXYnyrxnNgSsUxPWzyt/Okqw3gxUUuPZNymwTyZg8coiPpbKbGifX+vQNouqqAJ/Fw4FTMa6ZvgIPvkW+FJZ8esPdyDokBPVWAoYy9CoO2d8GwD7grdEXDAZelYbavIwdQq1G4O9Mfy+BPdLFcHudyYHJPuSDms4xxPvLnyCTL7UqT1aPfTMnvgosfdandQ4QpUiopmdd+gwfraR6YD+KTYyxIrFo/RSN4UrL9T0phQTM5Z2XgWdG5vO6yWW/0Orjt6bCkAaUCHLDuWnK7YNo/FuRbpTVLsod64iuG4ilA+G8jN+gV0Elefh+4QQmtvshuD4=
+  file: 
+    - "./bin/traefik-appinsights-watchdog.exe"
+    - "./bin/traefik-appinsights-watchdog"
+  advanced:
+    prerelease: true
+  on:
+    branch: master
+    repo: lawrencegripper/traefik-appinsights-watchdog
