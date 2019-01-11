@@ -11,4 +11,6 @@ type Configuration struct {
 	TraefikHealthEndpoint  string `description:"The traeifk health endpoint http://localhost:port/health"`
 	PollIntervalSec        int    `description:"The time waited between requests to the health endpoint"`
 	AllowInvalidCert       bool   `description:"Allow invalid certificates when performing routing checks on localhost"`
+	APIEndpointUsername    string `description:"Stores username required to call APIs including healthcheck"`
+	APIEndpointPassword    string `description:"Stores password required to call APIs including healthcheck"`
 }

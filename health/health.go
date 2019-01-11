@@ -3,10 +3,12 @@ package health
 import (
 	"context"
 	"crypto/tls"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/lawrencegripper/traefik-appinsights-watchdog/types"
@@ -24,14 +26,14 @@ func StartCheck(ctx context.Context, config types.Configuration, healthChannel c
 		case <-ctx.Done():
 			return
 		default:
-			ev := getStatsEvent(config.TraefikHealthEndpoint, tlsConfig)
+			ev := getStatsEvent(config.TraefikHealthEndpoint, config.APIEndpointUsername, config.APIEndpointPassword, tlsConfig)
 			healthChannel <- ev
 			time.Sleep(intervalDuration)
 		}
 	}
 }
 
-func getStatsEvent(endpoint string, tlsConfig *tls.Config) types.StatsEvent {
+func getStatsEvent(endpoint string, username string, password string, tlsConfig *tls.Config) types.StatsEvent {
 	event := types.StatsEvent{
 		Source:     "HealthCheck",
 		SourceTime: time.Now(),
@@ -46,7 +48,18 @@ func getStatsEvent(endpoint string, tlsConfig *tls.Config) types.StatsEvent {
 		},
 	}
 
-	resp, err := client.Get(endpoint)
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		event.IsSuccess = false
+		event.ErrorDetails = err.Error()
+		return event
+	}
+
+	// credentials are optional, but if provided, only username is mandatory
+	if len(strings.TrimSpace(username)) != 0 {
+		req.Header.Add("Authorization", "Basic "+basicAuth(username, password))
+	}
+	resp, err := client.Do(req)
 	elapsed := time.Since(start)
 	event.RequestDuration = elapsed
 	if err != nil {
@@ -75,4 +88,9 @@ func getStatsEvent(endpoint string, tlsConfig *tls.Config) types.StatsEvent {
 	event.IsSuccess = true
 	event.Data = data
 	return event
+}
+
+func basicAuth(username, password string) string {
+	auth := username + ":" + password
+	return base64.StdEncoding.EncodeToString([]byte(auth))
 }
