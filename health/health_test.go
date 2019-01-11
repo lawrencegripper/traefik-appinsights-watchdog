@@ -15,6 +15,11 @@ import (
 	"github.com/lawrencegripper/traefik-appinsights-watchdog/types"
 )
 
+const (
+	testUserName = "sp3cialUs3r"
+	testPassword = "Sup3rSecr3t"
+)
+
 func TestHealthRetreiveMetrics(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(handleHealthSuceed))
 	defer server.Close()
@@ -102,7 +107,7 @@ func TestHealthRetreiveMetrics_Authorized(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	config := types.Configuration{TraefikHealthEndpoint: server.URL + "/health", APIEndpointUsername: "User", APIEndpointPassword: "Sup3rSecr3t"}
+	config := types.Configuration{TraefikHealthEndpoint: server.URL + "/health", APIEndpointUsername: testUserName, APIEndpointPassword: testPassword}
 	channel := make(chan types.StatsEvent)
 
 	go StartCheck(ctx, config, channel)
@@ -215,7 +220,7 @@ func authenticate(r *http.Request) error {
 }
 
 func validate(username, password string) bool {
-	if username == "User" && password == "Sup3rSecr3t" {
+	if username == testUserName && password == testPassword {
 		return true
 	}
 	return false
