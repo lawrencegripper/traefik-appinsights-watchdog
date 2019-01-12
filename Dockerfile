@@ -1,5 +1,5 @@
 # build stage
-FROM golang:1.9.2-alpine
+FROM golang:1.11.4-alpine
 ENV GOBIN /go/bin
 RUN apk add --update --no-progress openssl git wget bash gcc musl-dev && \ 
     rm -rf /var/cache/apk/* && \
