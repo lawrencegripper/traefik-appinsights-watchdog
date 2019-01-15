@@ -3,7 +3,7 @@ Traefik Application Insights Watchdog
 
 [![Build Status](https://travis-ci.org/lawrencegripper/traefik-appinsights-watchdog.svg?branch=master)](https://travis-ci.org/lawrencegripper/traefik-appinsights-watchdog)
 
-> *Please note*: This project is in development. The current readme is a draft. 
+> *Please note*: This project is in development. The current readme is a draft.
 
 ## What is it?
 
@@ -18,28 +18,31 @@ If you would like to test or deploy separately here is a guide to launching the 
 > *WARNING*: No error is shown if the Application Insights key provided is incorrect. If you don't see events surfaced check the key is correct.
 
 ``` text
-    11:13 $ ./traefik-appinsights-watchdog start -h
+$ ./traefik-appinsights-watchdog start -h
 Starts the watchdog, checking both the /health endpoint and request routing
 
 Usage: start [--flag=flag_argument] [-f[flag_argument]] ...     set flag_argument to flag(s)
    or: start [--flag[=true|false| ]] [-f[true|false| ]] ...     set true/false to boolean flag(s)
 
 Flags:
+    --allowinvalidcert       Allow invalid certificates when performing routing checks on localhost        (default "false")
+    --apiendpointpassword    Stores password required to call APIs including healthcheck
+    --apiendpointusername    Stores username required to call APIs including healthcheck
     --appinsightskey         The application insights instrumentation key
-
     --debug                  Set to true for additional output in the console                              (default "false")
     --instanceid             The name to report for the instance                                           (default "nodename")
     --pollintervalsec        The time waited between requests to the health endpoint                       (default "120")
-    --traefikbackendname     This is the Traefik backend name of the watchdog test server. In SF this will be the fabricURI (default "fabric:/TraefikType/Watchdog")
-    --traefikhealthendpoint  The traeifk health endpoint                                                   (default "http://localhost:8080/health")
+    --traefikbackendname     This is the Traefik backend name of the watchdog test server. In SF this      (default "fabric:/TraefikType/Watchdog")
+                             will be the fabricURI
+    --traefikhealthendpoint  The traeifk health endpoint http://localhost:port/health                      (default "http://localhost:8080/health")
     --watchdogtestserverport Port which the simulated backend runs on                                      (default "40001")
     --watchdogtraefikurl     The url traefik will use to route requests to the watchdog                    (default "http://localhost:80/TraefikType/Watchdog")
--h, --help                   Print Help (this message) and exit d
+-h, --help                   Print Help (this message) and exit
 ```
 
 Events will then be added to your Application Insights instance as `CustomEvents`. You can query these using the [Analytics portal](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-analytics). Metrics from traefik will appear under `customdimensions` on the events. 
 
-Here is an example query to graph `failures` vs `success` over the last `30mins` in the Anaytics portal 
+Here is an example query to graph `failures` vs `success` over the last `30mins` in the Analytics portal:
 
 ```
     customEvents 
@@ -48,7 +51,7 @@ Here is an example query to graph `failures` vs `success` over the last `30mins`
     | render timechart 
 ```
 
-Here is a query to show full tabular data for the last `30mins`. 
+Here is a query to show full tabular data for the last `30mins`:
 
 ```
     customEvents 
@@ -105,6 +108,10 @@ Run command: `./traefik-appinsights-watchdog --appinsightskey=YourKeyHere`
 ```
 
 **Note:** The events logged to stdout may differ to the actual events you see in Application Insights due to some post processing.
+
+### Basic Auth in Traefik
+
+If Traefik's API endpoint (including `/health`) is protected with Basic Authentication, watchdog's health-check calls will fail by default (will receive 401, naturally). Hence, 2 new optional parameters were added through which one could pass the required credentials (`apiendpointusername` and `apiendpointpassword`).
 
 ## Why was it built?
 
