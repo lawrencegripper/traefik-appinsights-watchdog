@@ -3,7 +3,7 @@ Traefik Application Insights Watchdog
 
 [![Build Status](https://travis-ci.org/lawrencegripper/traefik-appinsights-watchdog.svg?branch=master)](https://travis-ci.org/lawrencegripper/traefik-appinsights-watchdog)
 
-## Warning: This project is no longer maintained. It remains available as a reference for those currently using solution. Please fork and re-use or update the code as needed.
+## Warning: This project is no longer maintained. It remains available as a reference for those currently using the solution. Please fork and re-use or update the code as needed.
 
 ## What is it?
 
